@@ -455,9 +455,9 @@ export class AppComponent {
     }
 
     this.selection.clear();
-    const slicedData = this.dataSource.data.slice(this.startSelectionRowIndex, this.endSelectionRowIndex + 1)
-    this.selection.select(...slicedData);
+    setTimeout(() => {
+      const slicedData = this.dataSource.data.slice(this.startSelectionRowIndex, this.endSelectionRowIndex + 1);
+      this.selection.select(...slicedData);
+    }, 10)
   }
-
-
 }
