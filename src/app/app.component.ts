@@ -444,6 +444,7 @@ export class AppComponent {
 
 
   selectRow(row: RootObjectWithPosition) {
+    this.selection.clear();
     const { position } = row;
     if (this.startSelectionRowIndex === -1 && this.endSelectionRowIndex === -1) {
       this.startSelectionRowIndex = position;
@@ -453,11 +454,9 @@ export class AppComponent {
     } else {
       this.endSelectionRowIndex = position;
     }
-
-    this.selection.clear();
     setTimeout(() => {
       const slicedData = this.dataSource.data.slice(this.startSelectionRowIndex, this.endSelectionRowIndex + 1);
       this.selection.select(...slicedData);
-    }, 10)
+    }, 30)
   }
 }
