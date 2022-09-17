@@ -439,6 +439,7 @@ export class AppComponent {
     if (this.isAllSelected()) {
       this.selection.clear();
       this.setSelectedItems();
+      this.startSelectionRowIndex = this.endSelectionRowIndex = -1;
       return;
     }
 
