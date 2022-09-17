@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 interface RootObject {
   serviceInternalId: number;
@@ -424,6 +424,8 @@ export class AppComponent {
   displayedColumns: string[] = ['select', 'position', 'serviceInternalId', 'quoteId', 'serviceHours'];
   dataSource = new MatTableDataSource<RootObject>(data.map((value, index) => ({ ...value, position: index })));
   selection = new SelectionModel<RootObject>(true, []);
+  _selectedItems: any;
+  @Output() selectedRows = new EventEmitter();
 
   /** Whether the number of selected elements matches the total number of rows. */
   isAllSelected() {
@@ -436,12 +438,18 @@ export class AppComponent {
   toggleAllRows() {
     if (this.isAllSelected()) {
       this.selection.clear();
+      this.setSelectedItems();
       return;
     }
 
     this.selection.select(...this.dataSource.data);
+    this.setSelectedItems();
   }
 
+  setSelectedItems(items = this.selection.selected) {
+    this._selectedItems = items;
+    this.selectedRows.emit(this._selectedItems);
+  }
 
   selectRow(row: RootObjectWithPosition) {
     this.selection.clear();
@@ -451,12 +459,15 @@ export class AppComponent {
       this.endSelectionRowIndex = position;
     } else if (position < this.startSelectionRowIndex) {
       this.startSelectionRowIndex = position;
+    } else if (position === this.startSelectionRowIndex) {
+      this.startSelectionRowIndex = position + 1;
     } else {
       this.endSelectionRowIndex = position;
     }
     setTimeout(() => {
       const slicedData = this.dataSource.data.slice(this.startSelectionRowIndex, this.endSelectionRowIndex + 1);
       this.selection.select(...slicedData);
+      this.setSelectedItems();
     }, 30)
   }
 }
