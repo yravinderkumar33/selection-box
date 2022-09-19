@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 interface RootObject {
   serviceInternalId: number;
@@ -418,7 +418,7 @@ const data: RootObject[] = [
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   startSelectionRowIndex: number = -1;
   endSelectionRowIndex: number = -1;
   displayedColumns: string[] = ['select', 'position', 'serviceInternalId', 'quoteId', 'serviceHours'];
@@ -426,6 +426,8 @@ export class AppComponent {
   selection = new SelectionModel<RootObject>(true, []);
   _selectedItems: any;
   @Output() selectedRows = new EventEmitter();
+
+
 
   /** Whether the number of selected elements matches the total number of rows. */
   isAllSelected() {
@@ -452,23 +454,43 @@ export class AppComponent {
     this.selectedRows.emit(this._selectedItems);
   }
 
-  selectRow(row: RootObjectWithPosition) {
-    this.selection.clear();
-    const { position } = row;
-    if (this.startSelectionRowIndex === -1 && this.endSelectionRowIndex === -1) {
-      this.startSelectionRowIndex = position;
-      this.endSelectionRowIndex = position;
-    } else if (position < this.startSelectionRowIndex) {
-      this.startSelectionRowIndex = position;
-    } else if (position === this.startSelectionRowIndex) {
-      this.startSelectionRowIndex = position + 1;
+
+  getSelector(rows: RootObjectWithPosition[]) {
+    const length = rows.length;
+    let selector = [-1, -1];
+    if (length === 0) {
+      selector = [-1, -1];
+    } else if (length === 1) {
+      const [startRow] = rows;
+      const position = startRow.position;
+      selector = [position, position];
     } else {
-      this.endSelectionRowIndex = position;
+      const sortedByIndex = rows.sort((a, b) => a.position - b.position);
+      const startRow = sortedByIndex[0], endRow = sortedByIndex[sortedByIndex.length - 1];
+      selector = [startRow.position, endRow.position];
     }
+    return selector;
+  }
+
+  selectRows(rows: RootObjectWithPosition[]) {
+    const [startRowIndex, endRowIndex] = this.getSelector(rows);
+    this.selection.clear();
     setTimeout(() => {
-      const slicedData = this.dataSource.data.slice(this.startSelectionRowIndex, this.endSelectionRowIndex + 1);
+      const slicedData = this.dataSource.data.slice(startRowIndex, endRowIndex + 1);
       this.selection.select(...slicedData);
       this.setSelectedItems();
-    }, 30)
+    }, 50)
   }
+
+
+  selectRow(row: RootObjectWithPosition) {
+    this.selection.select(row);
+  }
+
+  ngOnInit() {
+    // this.selectRows([])
+    this.selectRows([{ ...data[10], position: 10 },  { ...data[3], position: 3 }, { ...data[4], position: 4 },  { ...data[2], position: 2 }]);
+    // this.selectRows([{ ...data[10], position: 10 }]);
+  }
+
 }
