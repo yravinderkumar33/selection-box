@@ -482,15 +482,29 @@ export class AppComponent implements OnInit {
     }, 50)
   }
 
-
   selectRow(row: RootObjectWithPosition) {
-    this.selection.select(row);
+    const selectedItems: any[] = this.selection.selected;
+    const sortedSelectedItems = selectedItems.sort((a, b) => a.position - b.position);
+    let selection = [...selectedItems, row];
+
+    if (sortedSelectedItems.length) {
+      const firstElement = sortedSelectedItems[0], lastElement = sortedSelectedItems[sortedSelectedItems.length - 1];
+      if (row.position === firstElement.position) {
+        selection = this.dataSource.data.slice(row.position + 1, lastElement.position + 1);
+      } else if (row.position > firstElement.position && row.position < lastElement.position) {
+        selection = this.dataSource.data.slice(firstElement.position, row.position + 1);
+      } else if (row.position === lastElement.position) {
+        selection = this.dataSource.data.slice(firstElement.position, row.position);
+      }
+    }
+
+    this.selectRows(selection);
   }
 
   ngOnInit() {
-    // this.selectRows([])
-    this.selectRows([{ ...data[10], position: 10 },  { ...data[3], position: 3 }, { ...data[4], position: 4 },  { ...data[2], position: 2 }]);
-    // this.selectRows([{ ...data[10], position: 10 }]);
+    this.selectRows([{ ...data[10], position: 7 }, { ...data[3], position: 3 }, { ...data[4], position: 4 }]);
   }
+
+
 
 }
